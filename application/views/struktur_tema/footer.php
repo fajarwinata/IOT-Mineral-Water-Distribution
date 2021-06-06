@@ -2,10 +2,13 @@
 <script src="assets/vendor/bootstrap/js/bootstrap.min.js"></script>
 <script src="assets/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
 <script src="assets/vendor/jquery.easy-pie-chart/jquery.easypiechart.min.js"></script>
+<script type="text/javascript" src="assets/vendor/datatables/datatables.min.js"></script>
 <script src="assets/vendor/chartist/js/chartist.min.js"></script>
 <script src="assets/vendor/sweetalert/sweetalert.min.js"></script>
-<script src="assets/scripts/klorofil-common.js"></script>
+<script src="assets/scripts/error.js"></script>
+<script src="assets/scripts/upload.js"></script>
 <script src="assets/scripts/jquery.md5.js"></script>
+<script src="assets/scripts/klorofil-common.js"></script>
 <script>
 //GET METHOD
 var $_GET = {};
@@ -21,8 +24,35 @@ document.location.search.replace(/\??(?:([^=]+)=([^&]*)&?)/g, function () {
 
 $(document).ready(function(){
   if(!$_GET["q"]){
-    location.replace("?q="+$.md5("dashboard"));
+    location.replace("?q="+btoa("dashboard"));
   }
+  //Khusus_Import
+  $('#import').DataTable();
+
+  //Data Table Siswa
+  $('#master_siswa').DataTable( {
+      "columnDefs": [ {
+            orderable: false,
+            className: 'select-checkbox',
+            targets:   0
+        } ],
+      "select": {
+            style:    'multiple',
+            selector: 'td:first-child'
+        },
+      "paging":   true,
+      "ordering": true,
+      "info":     true
+  } );
+
+});
+
+//UPDATE_LIMIT_KELAS
+$(".ubahlimit").on("click", function(){
+  var id_class  = $(this).data("row");
+  var id_class2 = id_class.split("/");
+  var data_lim  = $(".lim"+id_class2[1]).val();
+  alert(data_lim);
 });
 
 $("#login").on("click", function(){
@@ -70,7 +100,7 @@ $("#login").on("click", function(){
           .then(function(){location.reload()});
         }
         else {
-          location.replace("?q="+$.md5("dashboard"));
+          location.replace("?q="+btoa("dashboard"));
         }
       },
       complete: function() {
@@ -87,7 +117,7 @@ $("#login").on("click", function(){
 });
 
 
-if($_GET["q"] == $.md5("dashboard")){
+if(atob($_GET["q"]) == "dashboard"){
 
   $(function() {
     var data, options;

@@ -70,16 +70,20 @@
     echo "siswa";
     // $this->load->view('admin/page.php');
   } else {
-    switch ($this->input->get("q")) {
-      case md5("dashboard"):
-        $page = "dashboard";
-        break;
 
-      default:
+    if($this->input->get("md"))
+      $page = base64_decode($this->input->get("q"))."_".base64_decode($this->input->get("md"));
+    else if($this->input->get("sq"))
+      $page = base64_decode($this->input->get("q"))."_".base64_decode($this->input->get("sq"));
+    else if($this->input->get("q"))
+      $page = base64_decode($this->input->get("q"));
+    else
       $page = "dashboard";
-        break;
-    }
-    $this->load->view("admin/$page");
+      if(file_exists(APPPATH."views/admin/$page.php"))
+        $this->load->view("admin/$page");
+      else
+        $this->load->view("errors/html/error_404");
+
   }
   ?>
   <!-- END MAIN -->
