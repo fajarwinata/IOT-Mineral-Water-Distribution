@@ -11,7 +11,10 @@
 	<link rel="stylesheet" href="assets/vendor/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="assets/vendor/linearicons/style.css">
 	<link rel="stylesheet" href="assets/vendor/chartist/css/chartist-custom.css">
+	<link rel="stylesheet" type="text/css" href="assets/vendor/datatables/datatables.min.css"/>
 	<!-- MAIN CSS -->
+	<link rel="stylesheet" href="assets/css/error.css">
+	<link rel="stylesheet" href="assets/css/upload.css">
 	<link rel="stylesheet" href="assets/css/main.css">
 	<!-- FOR DEMO PURPOSES ONLY. You should remove this in your project -->
 	<link rel="stylesheet" href="assets/css/demo.css">

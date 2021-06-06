@@ -7,4 +7,8 @@ class Mwater extends CI_Model{
         return $this->db->get_where("log_access", array("log_date" => date("Y-m-d")));
       }
     }
+
+    function water_balance($id_class){
+        return $this->db->get_where("conf_class", array("id_class" => $id_class));
+    }
 }
