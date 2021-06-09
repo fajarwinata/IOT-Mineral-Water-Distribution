@@ -81,8 +81,12 @@
       $page = "dashboard";
       if(file_exists(APPPATH."views/admin/$page.php"))
         $this->load->view("admin/$page");
-      else
+      else{
+        echo "<link rel=\"stylesheet\" href=\"assets/css/error.css\">";
+        
         $this->load->view("errors/html/error_404");
+        echo "<script src=\"assets/scripts/error.js\"></script>";
+      }
 
   }
   ?>
