@@ -5,10 +5,12 @@
 <script type="text/javascript" src="assets/vendor/datatables/datatables.min.js"></script>
 <script src="assets/vendor/chartist/js/chartist.min.js"></script>
 <script src="assets/vendor/sweetalert/sweetalert.min.js"></script>
-<script src="assets/scripts/error.js"></script>
+<script src="assets/vendor/select2/select2.min.js"></script>
 <script src="assets/scripts/upload.js"></script>
 <script src="assets/scripts/jquery.md5.js"></script>
 <script src="assets/scripts/klorofil-common.js"></script>
+
+
 <script>
 //GET METHOD
 var $_GET = {};
@@ -23,14 +25,32 @@ document.location.search.replace(/\??(?:([^=]+)=([^&]*)&?)/g, function () {
 //GET METHOD
 
 $(document).ready(function(){
+  //STANDAR select2
+  $('.kelas').select2();
+
   if(!$_GET["q"]){
     location.replace("?q="+btoa("dashboard"));
   }
   //Khusus_Import
   $('#import').DataTable();
 
-  //Data Table Siswa
-  $('#master_siswa').DataTable( {
+  //Data Table
+  var events = $('#btn_hapus');
+  var data_pilih = [];
+  var rowData, countData = " ", state_id;
+
+    switch(atob($_GET['md'])){
+      case 'siswa':
+        state_id = 1;
+      break;
+
+      case 'admin':
+        state_id = 1;
+      break;
+
+    }
+
+  var table = $('#master_'+atob($_GET['md'])).DataTable( {
       "columnDefs": [ {
             orderable: false,
             className: 'select-checkbox',
@@ -45,8 +65,103 @@ $(document).ready(function(){
       "info":     true
   } );
 
-});
+  table
+        .on( 'select', function ( e, dt, type, indexes ) {
+            data_pilih = [];
+            rowData = table.rows( { selected: true } ).data().toArray();
+            countData = table.rows( { selected: true } ).count();
+            // events.prepend( '<div><b>'+countData+' selection</b></div>') ;
+            if(countData>0){
+              for(var i = 0; i < countData; i++)
+              data_pilih.push(rowData[i][state_id]);
+              events.html( '<a href=\'#\' class=\'text-danger pull-right\' style=\'margin-right:25px;margin-bottom:10px\'><i class=\'fa fa-trash\'></i> ('+countData+') Hapus Data Terpilih</a>' );
+            }
+            else
+              events.html('');
+        } )
+        .on( 'deselect', function ( e, dt, type, indexes ) {
+          data_pilih = [];
+          rowData = table.rows( { selected: true } ).data().toArray();
+          countData = table.rows(  { selected: true }  ).count();
+          // events.prepend( '<div><b>'+countData+' selection</b></div>' ) ;
 
+          if(countData>0){
+            for(var i = 0; i < countData; i++)
+            data_pilih.push(rowData[i][state_id]);
+            events.html( '<a href=\'#\'  class=\'text-danger pull-right\' style=\'margin-right:25px;margin-bottom:10px\'><i class=\'fa fa-trash\'></i> ('+countData+') Hapus Data Terpilih</a>' );
+            for(var i = 0; i < countData; i++)
+            console.log(rowData[i][1]+" ");
+          }
+            else
+              events.html('');
+        } );
+
+        $(".hapus").on("click",function proses_hapus(){
+          swal({
+          title: "Kamu Yakin?",
+          text: "Kamu akan menghapus "+countData+" Data terpilih, Data yang sudah dihapus tidak dapat dikembalikan!",
+          icon: "warning",
+          buttons: ["Oh Tidak!", "Oke, Proses!"],
+          dangerMode: true,
+          })
+          .then((willDelete) => {
+            if (willDelete) {
+              var id,kondisi;
+              if(btoa($_GET['md']) == "admin"){
+                id      = $(".hapus").data();
+                kondisi = "false";
+              } else {
+                kondisi = "false";
+                id      = JSON.stringify(data_pilih);
+              }
+                $.ajax({
+                  url: '<?= site_url('main/'.base64_decode($this->input->get('md')).'_delete?row=') ?>'+kondisi,
+                  method: "post",
+                  dataType: "json",
+                  data: {id:id},
+                  beforeSend: function(){
+                    $("#loading").html("<img src=\"assets/img/loading.gif\" width=\"100%\" />");
+                    $("#loading").fadeIn(3000);
+                  },
+                  error: function(xhr) { // if error
+                    var message =" unknown ";
+                    if(xhr.status == "404")
+                    message = "["+xhr.statusText+"] 404 : Halaman yang direquest tidak ditemukan";
+                    else if(xhr.status == "200")
+                    message = "["+xhr.statusText+"] 200 : System tidak merespon balik";
+                    else
+                    message = "["+xhr.status+"] "+xhr.statusText;
+
+                    swal({
+                      title: "AJAX Error!",
+                      text: message,
+                      icon: "error"
+                    }).then(function(){
+                      location.reload();
+                    });
+
+                  },
+                  success: function(response){
+                    if(response.status == "0") {
+                      swal({title : "Kesalahan!", text: response.message, icon: "error"})
+                      .then(function(){location.reload()});
+                    }
+                    else {
+                      swal({title : "Sukses!", text: response.message, icon: "success"})
+                      .then(function(){location.replace("?q="+btoa("master")+"&md="+$_GET['md'])});
+                    }
+                  },
+                  complete: function() {
+                    $("#loading").fadeOut();
+                  }
+                });
+            } else {
+              swal("Data Batal Dihapus!");
+            }
+          });
+          // alert(JSON.stringify(data_pilih));
+        });
+});
 //UPDATE_LIMIT_KELAS
 $(".ubahlimit").on("click", function(){
   var id_class  = $(this).data("row");
@@ -236,5 +351,207 @@ if(atob($_GET["q"]) == "dashboard"){
 
   });
 }
+
+//Error Detail Tidak ditemukan
+  function belum_ada(){
+
+         swal({
+           title: "Peringatan!",
+           text: "Fitur Belum tersedia",
+           icon: "warning"
+         });
+
+  }
+  if ($('#error_detail').length){
+       swal({
+         title: "Error!",
+         text: "Rincian data tidak dapat ditampilkan",
+         icon: "error"
+       }).then(function(){
+         location.replace("?q="+btoa("master")+"&md="+btoa("siswa"));
+       });
+   }
+
+   //UPDATE SISWA
+   $("#profil_siswa").on("submit", function(){
+     $.ajax({
+       url: '<?= site_url('main/siswa_update') ?>',
+       method: "post",
+       dataType: "json",
+       data: $(this).serialize(),
+       beforeSend: function(){
+         $("#update").remove();
+         $("#loading").html("<img src=\"assets/img/loading.gif\" width=\"100%\" />");
+         $("#loading").fadeIn(3000);
+       },
+       error: function(xhr) { // if error
+         var message =" unknown ";
+         if(xhr.status == "400")
+           message = "["+xhr.statusText+"] 404 : Halaman yang direquest tidak ditemukan";
+         else if(xhr.status == "200")
+           message = "["+xhr.statusText+"] 200 : System tidak merespon balik";
+         else
+           message = "["+xhr.status+"] "+xhr.statusText;
+
+         swal({
+           title: "AJAX Error!",
+           text: message,
+           icon: "error"
+           }).then(function(){
+           location.reload();
+           });
+
+       },
+       success: function(response){
+         if(response.status == "0") {
+           swal({title : "Kesalahan!", text: response.message, icon: "error"})
+           .then(function(){location.reload()});
+         }
+         else {
+           swal({title : "Sukses!", text: response.message, icon: "success"})
+           .then(function(){location.reload()});
+         }
+       },
+       complete: function() {
+         $("#loading").fadeOut();
+       }
+     });
+   });
+
+//SISWA BARU
+$("#nis").on("change", function(){
+  $.ajax({
+    url: '<?= site_url('main/siswa_insert?cek_nis=true') ?>',
+    method: "post",
+    dataType: "json",
+    data: {nis:$("#nis").val()},
+    success: function(response){
+      if(response.status == "0") {
+        $("#nis_error").html(response.message);
+        $("#insert").attr("disabled","disabled");
+      } else {
+        $("#insert").attr("disabled", false);
+      }
+    }
+  });
+});
+
+$("#insert").on("click", function(){
+  var nis = $("#nis").val();
+  var nama = $("#nama").val();
+  var pass = $("#pass").val();
+
+  if(nis.length > 0 && nama.length > 0 && pass.length > 0){
+    $.ajax({
+      url: '<?= site_url('main/siswa_insert') ?>',
+      method: "post",
+      dataType: "json",
+      data: $("#baru_siswa").serialize(),
+      beforeSend: function(){
+        $("#insert").remove();
+        $("#loading").html("<img src=\"assets/img/loading.gif\" width=\"100%\" />");
+        $("#loading").fadeIn(3000);
+      },
+      error: function(xhr) { // if error
+        var message =" unknown ";
+        if(xhr.status == "404")
+        message = "["+xhr.statusText+"] 404 : Halaman yang direquest tidak ditemukan";
+        else if(xhr.status == "200")
+        message = "["+xhr.statusText+"] 200 : System tidak merespon balik";
+        else
+        message = "["+xhr.status+"] "+xhr.statusText;
+
+        swal({
+          title: "AJAX Error!",
+          text: message,
+          icon: "error"
+        }).then(function(){
+          location.reload();
+        });
+
+      },
+      success: function(response){
+        if(response.status == "0") {
+          swal({title : "Kesalahan!", text: response.message, icon: "error"})
+          .then(function(){location.reload()});
+        }
+        else {
+          swal({title : "Sukses!", text: response.message, icon: "success"})
+          .then(function(){location.reload()});
+        }
+      },
+      complete: function() {
+        $("#loading").fadeOut();
+      }
+    });
+  } else {
+    swal({title : "Kesalahan!", text: "Data NIS / Nama / Password Tidak Boleh Kosong", icon: "error"});
+  }
+
+});
+
+$("#delete").on("click", function(){
+  swal({
+  title: "Kamu Yakin?",
+  text: "Data yang sudah dihapus tidak dapat dikembalikan!",
+  icon: "warning",
+  buttons: ["Oh Tidak!", "Oke, Proses!"],
+  dangerMode: true,
+  })
+  .then((willDelete) => {
+    if (willDelete) {
+      var id = $("#id").val();
+
+        $.ajax({
+          url: '<?= site_url('main/siswa_delete') ?>',
+          method: "post",
+          dataType: "json",
+          data: {id:id},
+          beforeSend: function(){
+            $("#update").remove();
+            $(".main").remove();
+            $("#delete").remove();
+            $("#loading").html("<img src=\"assets/img/loading.gif\" width=\"100%\" />");
+            $("#loading").fadeIn(3000);
+          },
+          error: function(xhr) { // if error
+            var message =" unknown ";
+            if(xhr.status == "404")
+            message = "["+xhr.statusText+"] 404 : Halaman yang direquest tidak ditemukan";
+            else if(xhr.status == "200")
+            message = "["+xhr.statusText+"] 200 : System tidak merespon balik";
+            else
+            message = "["+xhr.status+"] "+xhr.statusText;
+
+            swal({
+              title: "AJAX Error!",
+              text: message,
+              icon: "error"
+            }).then(function(){
+              location.reload();
+            });
+
+          },
+          success: function(response){
+            if(response.status == "0") {
+              swal({title : "Kesalahan!", text: response.message, icon: "error"})
+              .then(function(){location.reload()});
+            }
+            else {
+              swal({title : "Sukses!", text: response.message, icon: "success"})
+              .then(function(){location.replace("?q="+btoa("master")+"&md="+btoa("siswa"))});
+            }
+          },
+          complete: function() {
+            $("#loading").fadeOut();
+          }
+        });
+    } else {
+      swal("Data Batal Dihapus!");
+    }
+  });
+
+
+});
 
 </script>

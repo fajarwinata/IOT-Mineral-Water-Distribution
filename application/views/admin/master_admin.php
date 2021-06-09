@@ -8,58 +8,50 @@
           <!-- BASIC TABLE -->
           <div class="panel" id="loading">
             <div class="panel-heading">
-              <h3 class="panel-title"><i class="fa fa-users"></i> Peserta Didik (Siswa)</h3>
+              <h3 class="panel-title"><i class="fa fa-user-secret"></i> Admin/User (Adminsitrator)</h3>
               <div class="pull-right" style="margin-top: -20px">
-                <a class="btn btn-info update-pro" href="?q=<?= base64_encode('import_siswa') ?>" title="IMPORT" ><i class="fa fa-file-excel-o"></i> <span>Import Data</span></a>
                 <a class="btn btn-success update-pro" type="button" class="btn btn-primary" data-toggle="modal" data-target="#tambah"><i class="fa fa-plus"></i> <span>Tambah Data</span></a>
               </div>
               <br>
-              <p class="small col-md-8"><i class="fa fa-file"></i> Saldo/jatah air minum yang disediakan oleh sekolah akan di atur ulang ke pengaturan kelas setiap harinya.</p>
             </div>
             <div id="btn_hapus" class="hapus"></div>
-
             <div class="panel-body">
-              <table id="master_siswa" class="table table-striped" style="width:100%">
+              <table id="master_admin" class="table table-striped" style="width:100%">
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>NIPD</th>
-                    <th>NISN</th>
-                    <th>Nama</th>
-                    <th>Saldo Air (<?= date("d/m/y") ?>)</th>
-                    <th>Detail</th>
+                    <th>ID Pengguna</th>
+                    <th>Nama Pengguna</th>
+                    <th>Password</th>
+                    <th>Level</th>
+                    <th>#</th>
                   </tr>
                 </thead>
                 <tbody>
                   <?php
-                  $data = $this->mdata->siswa("");
+                  $data = $this->mdata->admin();
                   if($data->num_rows() > 0){
                     $no = 1;
-                    foreach ($data->result() as $siswa) {
-                      $total = $this->mdata->kelas($siswa->id_class)->row();
-                      $nm_kelas = $total->nm_class;
-                      $total = ($total->lim_member-$siswa->balance_stud)/$total->lim_member*100;
-                      $total = 100-$total;
-                      if($total > 70 && $total <= 100) $progres ="success";
-                      else if($total > 30 && $total <= 70) $progres  ="primary";
-                      else if($total > 20 && $total <= 30) $progres  ="waring";
-                      else if($total >= 0 && $total <= 20) $progres  ="danger";
-
+                    foreach ($data->result() as $admin) {
                       echo "<tr>";
                       echo "<td></td>";
-                      echo "<td>".$siswa->nis_stud."</td>";
-                      echo "<td>".$siswa->nisn_stud."</td>";
-                      echo "<td>".$siswa->nm_stud." <span class='badge bg-danger pull-right'> $nm_kelas </span></td>";
-                      echo "<td class='text-center'>
-                      ".$siswa->balance_stud." milli liter
-                      <div class=\"progress\">
-                      <div class=\"progress-bar progress-bar-$progres\" role=\"progressbar\" aria-valuenow=\"$total\" aria-valuemin=\"0\" aria-valuemax=\"100\" style=\"width: $total%;\">
-                        <span>".$total."%</span>
-                      </div></div>
-                      </td>";
-                      echo "<td><button onclick=\"location.replace('?q=".base64_encode('master_siswa_detil')."&id=".$siswa->id_stud."')\" class='btn btn-primary col-md-12'><i class='fa fa-search'></i> Detail</button></td>";
+                      echo "<td><input type='text' name='id_user' id='id_user' value='".$admin->id_user."' class='form-control ' readonly></td>";
+                      echo "<td><input type='text' name='nm_user' id='nm_user' value='".$admin->nm_user."' class='form-control '></td>";
+                      echo "<td><input type='text' name='pass_user' id='pass_user' class='form-control '></td>";
+                      if($this->session->userdata('sess_level') == "ADM")
+                      echo "<td class='text-center'>".$admin->level.", ubah:
+                      <select name='level' class='form-control'>
+                        <option value='ADM'>Admin Master</option>
+                        <option value='MAN'>Manager</option>
+                        <option value='SPV'>Supervisi</option>
+                      </select></td>";
+                      else
+                      echo "<td class='text-center'>".$admin->level."</td>";
+                      echo "<td>
+                            <button class='ubah btn btn-primary col-md-12'><i class='fa fa-pencil'></i> Ubah</button>
+                            <button data-row=\"".$admin->id_user."\" class='hapus btn btn-danger col-md-12'><i class='fa fa-trash'></i> Hapus</button>
+                            </td>";
                       echo "</tr>";
-
                     }
                   }
                   ?>

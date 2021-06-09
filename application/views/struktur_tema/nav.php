@@ -3,7 +3,7 @@
     <nav>
       <ul class="nav">
         <?php
-        if($this->session->userdata("level") != "siswa"){
+        if($this->session->userdata("sess_level") != "siswa"){
           $link = array("dashboard","master","transaksi","config","mesin");
           $menu = array("Beranda","Data Master","Transaksi","Konfigurasi","Mesin");
           $icon = array("home","file-empty","dice","code","cog");

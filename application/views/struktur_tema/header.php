@@ -12,8 +12,8 @@
 	<link rel="stylesheet" href="assets/vendor/linearicons/style.css">
 	<link rel="stylesheet" href="assets/vendor/chartist/css/chartist-custom.css">
 	<link rel="stylesheet" type="text/css" href="assets/vendor/datatables/datatables.min.css"/>
+	<link rel="stylesheet" type="text/css" href="assets/vendor/select2/select2.min.css"/>
 	<!-- MAIN CSS -->
-	<link rel="stylesheet" href="assets/css/error.css">
 	<link rel="stylesheet" href="assets/css/upload.css">
 	<link rel="stylesheet" href="assets/css/main.css">
 	<!-- FOR DEMO PURPOSES ONLY. You should remove this in your project -->
